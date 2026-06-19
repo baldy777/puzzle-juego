@@ -13,8 +13,8 @@ const SVG_NS = "http://www.w3.org/2000/svg";
 // Tamaño base de cada pieza en "unidades" del SVG (no son píxeles reales,
 // el tamaño en pantalla lo controla la variable CSS --piece-size).
 const S = 100;
-const TAB_AMP = 18;   // qué tan grande es la protuberancia
-const MARGIN = 32;    // espacio extra alrededor para que el tab no se corte
+const TAB_AMP = 5;   // qué tan grande es la protuberancia (más chico = más seguro)
+const MARGIN = 28;    // espacio extra alrededor para que el tab no se corte
 
 let movesCount = 0;
 let placedCount = 0;
@@ -62,16 +62,16 @@ function edgeSegment(p0, p1, type) {
     };
   }
 
-  const c1 = pt(0.20, 0);
-  const c2 = pt(0.20, amp);
-  const k1 = pt(0.35, amp);
+  const c1 = pt(0.32, 0);
+  const c2 = pt(0.32, amp);
+  const k1 = pt(0.42, amp);
 
-  const c3 = pt(0.40, amp * 1.5);
-  const c4 = pt(0.60, amp * 1.5);
-  const k2 = pt(0.65, amp);
+  const c3 = pt(0.45, amp * 1.3);
+  const c4 = pt(0.55, amp * 1.3);
+  const k2 = pt(0.58, amp);
 
-  const c5 = pt(0.80, amp);
-  const c6 = pt(0.80, 0);
+  const c5 = pt(0.68, amp);
+  const c6 = pt(0.68, 0);
 
   return `C ${c1.x},${c1.y} ${c2.x},${c2.y} ${k1.x},${k1.y} ` +
          `C ${c3.x},${c3.y} ${c4.x},${c4.y} ${k2.x},${k2.y} ` +
