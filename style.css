@@ -221,6 +221,11 @@ body {
   transform: none;
 }
 
+.piece.dragging {
+  transition: none;
+  cursor: grabbing;
+}
+
 .piece.wrong-shake {
   animation: shake 0.35s ease;
 }

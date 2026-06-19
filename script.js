@@ -20,7 +20,6 @@ let movesCount = 0;
 let placedCount = 0;
 let timerInterval = null;
 let secondsElapsed = 0;
-let draggedPieceEl = null;
 
 const boardEl = document.getElementById("board");
 const trayEl = document.getElementById("tray");
@@ -109,7 +108,6 @@ function createPieceElement(r, c, horizType, vertType) {
   const svg = document.createElementNS(SVG_NS, "svg");
   svg.setAttribute("viewBox", `${-MARGIN} ${-MARGIN} ${S + MARGIN * 2} ${S + MARGIN * 2}`);
   svg.classList.add("piece");
-  svg.setAttribute("draggable", "true");
   svg.dataset.row = r;
   svg.dataset.col = c;
 
@@ -196,10 +194,6 @@ function buildBoard() {
       cell.dataset.row = r;
       cell.dataset.col = c;
 
-      cell.addEventListener("dragover", onCellDragOver);
-      cell.addEventListener("dragleave", onCellDragLeave);
-      cell.addEventListener("drop", onCellDrop);
-
       boardEl.appendChild(cell);
     }
   }
@@ -222,69 +216,123 @@ function buildTray() {
 
   positions.forEach(({ r, c }) => {
     const piece = createPieceElement(r, c, horizType, vertType);
-    piece.addEventListener("dragstart", onPieceDragStart);
-    piece.addEventListener("dragend", onPieceDragEnd);
+    piece.addEventListener("pointerdown", onPointerDown);
     trayEl.appendChild(piece);
   });
 }
 
 /* ---------------------------------------------------------
-   Eventos de drag & drop
+   Arrastre manual con Pointer Events (mouse y touch)
    --------------------------------------------------------- */
-function onPieceDragStart(e) {
-  draggedPieceEl = e.currentTarget;
-  e.dataTransfer.effectAllowed = "move";
-  e.dataTransfer.setData("text/plain", JSON.stringify({
-    row: draggedPieceEl.dataset.row,
-    col: draggedPieceEl.dataset.col,
-  }));
+let activePiece = null;
+let pointerOffsetX = 0;
+let pointerOffsetY = 0;
+let originParent = null;
+let originNextSibling = null;
+
+function onPointerDown(e) {
+  const piece = e.currentTarget;
+  if (piece.classList.contains("placed")) return;
+  e.preventDefault();
+
+  activePiece = piece;
+  originParent = piece.parentElement;
+  originNextSibling = piece.nextSibling;
+
+  const rect = piece.getBoundingClientRect();
+  pointerOffsetX = e.clientX - rect.left;
+  pointerOffsetY = e.clientY - rect.top;
+
+  piece.setPointerCapture(e.pointerId);
+  piece.classList.add("dragging");
+
+  // Se "saca" la pieza al body para que pueda flotar libremente
+  // por encima de todo mientras se arrastra.
+  document.body.appendChild(piece);
+  piece.style.position = "fixed";
+  piece.style.left = `${rect.left}px`;
+  piece.style.top = `${rect.top}px`;
+  piece.style.width = `${rect.width}px`;
+  piece.style.height = `${rect.height}px`;
+  piece.style.zIndex = "1000";
+  piece.style.pointerEvents = "none"; // para que elementFromPoint detecte lo de abajo
+
+  piece.addEventListener("pointermove", onPointerMove);
+  piece.addEventListener("pointerup", onPointerUp);
+
   startTimerIfNeeded();
 }
 
-function onPieceDragEnd() {
-  draggedPieceEl = null;
-}
+function onPointerMove(e) {
+  if (!activePiece) return;
+  activePiece.style.left = `${e.clientX - pointerOffsetX}px`;
+  activePiece.style.top = `${e.clientY - pointerOffsetY}px`;
 
-function onCellDragOver(e) {
-  e.preventDefault();
-  if (!e.currentTarget.classList.contains("filled")) {
-    e.currentTarget.classList.add("drag-over");
+  document.querySelectorAll(".cell.drag-over").forEach((c) => c.classList.remove("drag-over"));
+  const under = document.elementFromPoint(e.clientX, e.clientY);
+  const cell = under ? under.closest(".cell") : null;
+  if (cell && !cell.classList.contains("filled")) {
+    cell.classList.add("drag-over");
   }
 }
 
-function onCellDragLeave(e) {
-  e.currentTarget.classList.remove("drag-over");
-}
+function onPointerUp(e) {
+  if (!activePiece) return;
+  const piece = activePiece;
 
-function onCellDrop(e) {
-  e.preventDefault();
-  const cell = e.currentTarget;
-  cell.classList.remove("drag-over");
+  piece.releasePointerCapture(e.pointerId);
+  piece.removeEventListener("pointermove", onPointerMove);
+  piece.removeEventListener("pointerup", onPointerUp);
+  document.querySelectorAll(".cell.drag-over").forEach((c) => c.classList.remove("drag-over"));
 
-  if (cell.classList.contains("filled") || !draggedPieceEl) return;
+  const under = document.elementFromPoint(e.clientX, e.clientY);
+  const cell = under ? under.closest(".cell") : null;
 
-  const data = JSON.parse(e.dataTransfer.getData("text/plain"));
-  const correct = String(cell.dataset.row) === String(data.row) &&
-                   String(cell.dataset.col) === String(data.col);
+  // Restaurar el estilo "flotante" antes de reubicar la pieza
+  piece.classList.remove("dragging");
+  piece.style.position = "";
+  piece.style.left = "";
+  piece.style.top = "";
+  piece.style.width = "";
+  piece.style.height = "";
+  piece.style.zIndex = "";
+  piece.style.pointerEvents = "";
 
-  movesCount++;
-  moveCounterEl.textContent = movesCount;
+  let placedOk = false;
 
-  if (correct) {
-    cell.appendChild(draggedPieceEl);
-    draggedPieceEl.classList.add("placed");
-    draggedPieceEl.setAttribute("draggable", "false");
-    cell.classList.add("filled");
-    placedCount++;
+  if (cell && !cell.classList.contains("filled")) {
+    movesCount++;
+    moveCounterEl.textContent = movesCount;
 
-    if (placedCount === GRID * GRID) {
-      onPuzzleComplete();
+    const correct = String(cell.dataset.row) === String(piece.dataset.row) &&
+                     String(cell.dataset.col) === String(piece.dataset.col);
+
+    if (correct) {
+      cell.appendChild(piece);
+      piece.classList.add("placed");
+      cell.classList.add("filled");
+      placedCount++;
+      placedOk = true;
+
+      if (placedCount === GRID * GRID) {
+        onPuzzleComplete();
+      }
     }
-  } else {
-    const pieceToShake = draggedPieceEl;
-    pieceToShake.classList.add("wrong-shake");
-    setTimeout(() => pieceToShake.classList.remove("wrong-shake"), 350);
   }
+
+  if (!placedOk) {
+    if (originNextSibling && originNextSibling.parentElement === originParent) {
+      originParent.insertBefore(piece, originNextSibling);
+    } else {
+      originParent.appendChild(piece);
+    }
+    if (cell) {
+      piece.classList.add("wrong-shake");
+      setTimeout(() => piece.classList.remove("wrong-shake"), 350);
+    }
+  }
+
+  activePiece = null;
 }
 
 /* ---------------------------------------------------------
