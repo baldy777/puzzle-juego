@@ -37,7 +37,11 @@
 
     <!-- Zona de juego: tablero + bandeja de piezas -->
     <section class="play-area">
-      <div id="board" class="board" aria-label="Tablero del rompecabezas"></div>
+      <div id="board-wrapper" class="board-wrapper">
+        <div id="board" class="board" aria-label="Tablero del rompecabezas"></div>
+        <img id="reveal-image" class="reveal-image" src="imagen.jpg" alt="Imagen completa revelada al ganar">
+        <div id="shine" class="shine"></div>
+      </div>
       <div id="tray" class="tray" aria-label="Piezas desordenadas"></div>
     </section>
 
