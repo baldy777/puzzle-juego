@@ -30,6 +30,8 @@ const winStatsEl = document.getElementById("win-stats");
 
 document.getElementById("reset-btn").addEventListener("click", startNewGame);
 document.getElementById("play-again-btn").addEventListener("click", startNewGame);
+document.addEventListener("pointermove", onPointerMove);
+document.addEventListener("pointerup", onPointerUp);
 
 startNewGame();
 
@@ -243,7 +245,6 @@ function onPointerDown(e) {
   pointerOffsetX = e.clientX - rect.left;
   pointerOffsetY = e.clientY - rect.top;
 
-  piece.setPointerCapture(e.pointerId);
   piece.classList.add("dragging");
 
   // Se "saca" la pieza al body para que pueda flotar libremente
@@ -256,9 +257,6 @@ function onPointerDown(e) {
   piece.style.height = `${rect.height}px`;
   piece.style.zIndex = "1000";
   piece.style.pointerEvents = "none"; // para que elementFromPoint detecte lo de abajo
-
-  piece.addEventListener("pointermove", onPointerMove);
-  piece.addEventListener("pointerup", onPointerUp);
 
   startTimerIfNeeded();
 }
@@ -280,9 +278,6 @@ function onPointerUp(e) {
   if (!activePiece) return;
   const piece = activePiece;
 
-  piece.releasePointerCapture(e.pointerId);
-  piece.removeEventListener("pointermove", onPointerMove);
-  piece.removeEventListener("pointerup", onPointerUp);
   document.querySelectorAll(".cell.drag-over").forEach((c) => c.classList.remove("drag-over"));
 
   const under = document.elementFromPoint(e.clientX, e.clientY);
