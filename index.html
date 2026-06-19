@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rompecabezas Salesiana</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="game-header">
+    <h1>Rompecabezas</h1>
+    <p class="subtitle">Arrastra cada pieza a su lugar en el tablero</p>
+  </header>
+
+  <main class="game-wrapper">
+
+    <!-- Panel lateral: imagen de referencia + controles -->
+    <aside class="side-panel">
+      <div class="reference-box">
+        <h2>Referencia</h2>
+        <img id="reference-image" src="imagen.jpg" alt="Imagen de referencia del rompecabezas">
+      </div>
+
+      <div class="controls">
+        <div class="stat">
+          <span class="stat-label">Movimientos</span>
+          <span id="move-counter" class="stat-value">0</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Tiempo</span>
+          <span id="timer" class="stat-value">00:00</span>
+        </div>
+        <button id="reset-btn" class="btn">Reiniciar</button>
+      </div>
+    </aside>
+
+    <!-- Zona de juego: tablero + bandeja de piezas -->
+    <section class="play-area">
+      <div id="board" class="board" aria-label="Tablero del rompecabezas"></div>
+      <div id="tray" class="tray" aria-label="Piezas desordenadas"></div>
+    </section>
+
+  </main>
+
+  <!-- Mensaje de victoria -->
+  <div id="win-overlay" class="win-overlay hidden">
+    <div class="win-card">
+      <h2>¡Completado!</h2>
+      <p id="win-stats"></p>
+      <button id="play-again-btn" class="btn">Jugar de nuevo</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

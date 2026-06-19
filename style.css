@@ -1,0 +1,284 @@
+:root {
+  --bg: #101820;
+  --panel-bg: #1b2530;
+  --board-bg: #0c1218;
+  --cell-bg: #19222c;
+  --cell-border: #2d3a47;
+  --accent: #c0392b;       /* rojo ladrillo, tomado de la foto */
+  --accent-light: #e0594a;
+  --sky: #4a90c4;          /* azul cielo, tomado de la foto */
+  --text: #eef2f5;
+  --text-dim: #9aa7b2;
+  --success: #3fae6a;
+  --radius: 10px;
+  --piece-size: 90px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 16px 60px;
+}
+
+/* ---------- Header ---------- */
+.game-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.game-header h1 {
+  margin: 0 0 4px;
+  font-size: 1.8rem;
+  letter-spacing: 0.5px;
+  color: var(--text);
+}
+
+.game-header h1::before {
+  content: "";
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  background: var(--accent);
+  border-radius: 2px;
+  margin-right: 10px;
+  vertical-align: middle;
+}
+
+.subtitle {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 0.95rem;
+}
+
+/* ---------- Layout principal ---------- */
+.game-wrapper {
+  display: flex;
+  gap: 28px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+  max-width: 980px;
+}
+
+/* ---------- Panel lateral ---------- */
+.side-panel {
+  background: var(--panel-bg);
+  border-radius: var(--radius);
+  padding: 18px;
+  width: 220px;
+  flex-shrink: 0;
+  border: 1px solid var(--cell-border);
+}
+
+.reference-box h2 {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-dim);
+  margin: 0 0 10px;
+}
+
+#reference-image {
+  width: 100%;
+  display: block;
+  border-radius: 6px;
+  border: 2px solid var(--cell-border);
+}
+
+.controls {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-bottom: 1px solid var(--cell-border);
+  padding-bottom: 8px;
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-value {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--accent-light);
+}
+
+.btn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.btn:hover {
+  background: var(--accent-light);
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+/* ---------- Zona de juego ---------- */
+.play-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.board {
+  position: relative;
+  width: calc(var(--piece-size) * 4);
+  height: calc(var(--piece-size) * 4);
+  background: var(--board-bg);
+  border-radius: var(--radius);
+  border: 1px solid var(--cell-border);
+  display: grid;
+  grid-template-columns: repeat(4, var(--piece-size));
+  grid-template-rows: repeat(4, var(--piece-size));
+}
+
+.cell {
+  border: 1px dashed var(--cell-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cell.drag-over {
+  background: rgba(74, 144, 196, 0.18);
+}
+
+.cell.filled {
+  border-style: solid;
+}
+
+/* ---------- Bandeja de piezas ---------- */
+.tray {
+  width: 100%;
+  max-width: calc(var(--piece-size) * 4 + 40px);
+  min-height: calc(var(--piece-size) * 1.4);
+  background: var(--panel-bg);
+  border: 1px solid var(--cell-border);
+  border-radius: var(--radius);
+  padding: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-content: flex-start;
+}
+
+/* ---------- Piezas ---------- */
+.piece {
+  width: var(--piece-size);
+  height: var(--piece-size);
+  cursor: grab;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+  transition: transform 0.12s ease;
+  touch-action: none;
+}
+
+.piece:active {
+  cursor: grabbing;
+}
+
+.piece:hover {
+  transform: scale(1.04);
+}
+
+.piece.placed {
+  cursor: default;
+  filter: none;
+}
+
+.piece.placed:hover {
+  transform: none;
+}
+
+.piece.wrong-shake {
+  animation: shake 0.35s ease;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+/* ---------- Overlay de victoria ---------- */
+.win-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 12, 16, 0.82);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.win-overlay.hidden {
+  display: none;
+}
+
+.win-card {
+  background: var(--panel-bg);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 32px 40px;
+  text-align: center;
+  max-width: 320px;
+}
+
+.win-card h2 {
+  margin: 0 0 10px;
+  color: var(--success);
+  font-size: 1.6rem;
+}
+
+.win-card p {
+  color: var(--text-dim);
+  margin: 0 0 20px;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 720px) {
+  :root {
+    --piece-size: 70px;
+  }
+
+  .game-wrapper {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .side-panel {
+    width: 100%;
+    max-width: calc(var(--piece-size) * 4 + 40px);
+  }
+}
